@@ -1,24 +1,29 @@
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import mixins, viewsets
-from rest_framework import generics, status
-from rest_framework.response import Response
+from rest_framework import generics, mixins, status, viewsets
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.generics import get_object_or_404
-from .models import Post, Comment
-from .serializers import PostSerializer, PostCreateSerializer, CommentSerializer, CommentCreateSerializer
-from .permissions import CustomReadOnly
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 from users.models import Profile
+
+from .models import Comment, Post
+from .permissions import CustomReadOnly
+from .serializers import (
+    CommentCreateSerializer,
+    CommentSerializer,
+    PostCreateSerializer,
+    PostSerializer,
+)
 
 
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
     permission_classes = [CustomReadOnly]
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['author', 'likes']
+    filterset_fields = ["author", "likes"]
 
     def get_serializer_class(self):
-        if self.action == 'list' or 'retrieve':
+        if self.action == "list" or "retrieve":
             return PostSerializer
         return PostCreateSerializer
 
@@ -32,7 +37,7 @@ class CommentViewSet(viewsets.ModelViewSet):
     permission_classes = [CustomReadOnly]
 
     def get_serializer_class(self):
-        if self.action == 'list' or 'retrieve':
+        if self.action == "list" or "retrieve":
             return CommentSerializer
         return CommentCreateSerializer
 
@@ -41,7 +46,7 @@ class CommentViewSet(viewsets.ModelViewSet):
         serializer.save(author=self.request.user, profile=profile)
 
 
-@api_view(['GET'])
+@api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def like_post(request, pk):
     post = get_object_or_404(Post, pk=pk)
@@ -50,4 +55,4 @@ def like_post(request, pk):
     else:
         post.likes.add(request.user)
 
-    return Response({'status': 'ok'})
+    return Response({"status": "ok"})
